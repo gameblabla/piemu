@@ -1,5 +1,5 @@
 DEBUG = -g
-OPT = -O1 -pg -m32 -D_16BPP
+OPT = -O1 -pg -g3 -m32 -D_16BPP -DSOFTWARE_SCALING
 LINKER = 
 SDLDIR = 
 CFLAGS = -Iinclude -Wall $(shell sdl-config --cflags) -DLINUX $(OPT)

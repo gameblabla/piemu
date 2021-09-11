@@ -47,6 +47,10 @@ int LoadFlashImage(struct tagPIEMU_CONTEXT* context, FLASH* pFlashInfo, void* pU
   return 1;
 }
 
+#ifdef SOFTWARE_SCALING
+extern SDL_Surface* rl_screen;
+#endif
+
 int UpdateScreen(PIEMU_CONTEXT* context, void* pUser)
 {
   SDL_Surface* surface;
@@ -96,7 +100,13 @@ int UpdateScreen(PIEMU_CONTEXT* context, void* pUser)
     SDL_UnlockSurface(surface);
 
 //  SDL_BlitSurface(context->buffer, NULL, context->screen, NULL);
+
+#ifdef SOFTWARE_SCALING
+	SDL_SoftStretch(surface, NULL, rl_screen, NULL);
+	SDL_Flip(rl_screen);
+#else
 	SDL_Flip(context->screen);
+#endif
 //  SDL_UpdateRects(context->screen, 1, &rctDest);
   return 1;
 }

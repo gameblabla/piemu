@@ -1,0 +1,28 @@
+CC = /opt/funkey-toolchain-shared/bin/arm-linux-gcc
+
+#PROFILE = YES
+
+OPT = -Ofast -fno-PIC -fdata-sections -ffunction-sections -fsingle-precision-constant -fno-common -flto
+OPT +=  -march=armv7-a+neon-vfpv4 -mtune=cortex-a7 -mfpu=neon-vfpv4 -fno-math-errno
+OPT += -D_16BPP -DNDEBUG -DSOFTWARE_SCALING -DFUNKEY
+
+DEBUG = -g
+LINKER = 
+SDLDIR = 
+CFLAGS = -Iinclude -Wall $(shell /opt/funkey-toolchain-shared/arm-funkey-linux-musleabihf/sysroot/usr/bin/sdl-config --cflags) -DLINUX $(OPT)
+SDLLIB =
+LIBS = -nodefaultlibs -lc -lgcc -lSDL -lasound -lm -flto -Wl,-O1,--sort-common,--as-needed,--gc-sections -no-pie -s
+O=.o
+A=
+EXE=.linux
+COMPILE = -c
+LINK = -o 
+
+ifeq ($(PROFILE), YES)
+CFLAGS 		+= -fprofile-generate=/media/data/local/home/piemu_gcda
+else ifeq ($(PROFILE), APPLY)
+CFLAGS		+= -fprofile-use=$(PWD) -fbranch-probabilities
+LIBS 		+= -lgcov
+endif
+
+include makefile.rule

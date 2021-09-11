@@ -28,6 +28,30 @@
 #define KEY_NOWAIT  "nowait"
 //#define KEY_DBG "dbg" //デバッグメッセージ状態は保存しない
 
+#ifdef FUNKEY
+#define PI_EMU_KEYUP SDLK_u
+#define PI_EMU_KEYDOWN SDLK_d
+#define PI_EMU_KEYLEFT SDLK_l
+#define PI_EMU_KEYRIGHT SDLK_r
+
+#define PI_EMU_KEYA SDLK_a
+#define PI_EMU_KEYB SDLK_b
+#define PI_EMU_KEYSTART SDLK_s
+#define PI_EMU_KEYSELECT SDLK_k
+#define PI_EMU_EXIT SDLK_q
+#else
+#define PI_EMU_KEYUP SDLK_UP
+#define PI_EMU_KEYDOWN SDLK_DOWN
+#define PI_EMU_KEYLEFT SDLK_LEFT
+#define PI_EMU_KEYRIGHT SDLK_RIGHT
+
+#define PI_EMU_KEYA SDLK_LCTRL
+#define PI_EMU_KEYB SDLK_LALT
+#define PI_EMU_KEYSTART SDLK_RETURN
+#define PI_EMU_KEYSELECT SDLK_ESCAPE
+#define PI_EMU_EXIT SDLK_HOME
+#endif
+
 /****************************************************************************
  *  グローバル変数
  ****************************************************************************/
@@ -83,13 +107,22 @@ int nCpuFreq, nBusFreq;
 #define SDL_TRIPLEBUF SDL_DOUBLEBUF
 #endif
 
+#ifdef SOFTWARE_SCALING
+SDL_Surface* rl_screen;
+#endif
+
 void ui_init(PIEMU_CONTEXT* context)
 {
 
 	SDL_WM_SetCaption("P/EMU/SDL", "P/EMU/SDL");
 	SDL_ShowCursor(SDL_DISABLE);
 	#ifdef _16BPP
+	#ifdef SOFTWARE_SCALING
+	rl_screen = SDL_SetVideoMode(0, 0, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	context->screen = SDL_CreateRGBSurface(SDL_HWPALETTE, 128, 88, 16, 0, 0, 0, 0);
+	#else
 	context->screen = SDL_SetVideoMode(128, 88, 16, SDL_HWSURFACE | SDL_TRIPLEBUF);
+	#endif
 	#else
 	context->screen = SDL_SetVideoMode(128, 88, 32, SDL_HWSURFACE /*| SDL_HWPALETTE*/);
 	#endif
@@ -172,28 +205,28 @@ int SDL_main(int argc, char *argv[])
         case SDL_KEYDOWN:
 			switch(event.key.keysym.sym)
 			{
-				case SDLK_LEFT:
+				case PI_EMU_KEYLEFT:
 					context.keystate[KEY_LEFT] = 1;
 				break;
-				case SDLK_RIGHT:
+				case PI_EMU_KEYRIGHT:
 					context.keystate[KEY_RIGHT] = 1;
 				break;
-				case SDLK_UP:
+				case PI_EMU_KEYUP:
 					context.keystate[KEY_UP] = 1;
 				break;
-				case SDLK_DOWN:
+				case PI_EMU_KEYDOWN:
 					context.keystate[KEY_DOWN] = 1;
 				break;
-				case SDLK_LCTRL:
+				case PI_EMU_KEYA:
 					context.keystate[KEY_A] = 1;
 				break;
-				case SDLK_LALT:
+				case PI_EMU_KEYB:
 					context.keystate[KEY_B] = 1;
 				break;
-				case SDLK_RETURN:
+				case PI_EMU_KEYSTART:
 					context.keystate[KEY_START] = 1;
 				break;
-				case SDLK_ESCAPE:
+				case PI_EMU_KEYSELECT:
 					context.keystate[KEY_SELECT] = 1;
 				break;
 				default:
@@ -203,31 +236,34 @@ int SDL_main(int argc, char *argv[])
         case SDL_KEYUP:
 			switch(event.key.keysym.sym)
 			{
-				case SDLK_LEFT:
+				case PI_EMU_KEYLEFT:
 					context.keystate[KEY_LEFT] = 0;
 				break;
-				case SDLK_RIGHT:
+				case PI_EMU_KEYRIGHT:
 					context.keystate[KEY_RIGHT] = 0;
 				break;
-				case SDLK_UP:
+				case PI_EMU_KEYUP:
 					context.keystate[KEY_UP] = 0;
 				break;
-				case SDLK_DOWN:
+				case PI_EMU_KEYDOWN:
 					context.keystate[KEY_DOWN] = 0;
 				break;
-				case SDLK_LCTRL:
+				case PI_EMU_KEYA:
 					context.keystate[KEY_A] = 0;
 				break;
-				case SDLK_LALT:
+				case PI_EMU_KEYB:
 					context.keystate[KEY_B] = 0;
 				break;
-				case SDLK_RETURN:
+				case PI_EMU_KEYSTART:
 					context.keystate[KEY_START] = 0;
 				break;
-				case SDLK_ESCAPE:
+				case PI_EMU_KEYSELECT:
 					context.keystate[KEY_SELECT] = 0;
 				break;
-				case SDLK_HOME:
+				case PI_EMU_EXIT:
+				#ifdef GKD
+				case SDLK_TAB:
+				#endif
 					goto L_EXIT;
 				break;
 				default:
