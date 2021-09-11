@@ -1,0 +1,7 @@
+*.opk
+*.o
+*.a
+*.gcda
+*.linux
+*.pfi
+*.out

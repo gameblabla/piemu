@@ -11,6 +11,9 @@ all: $(OBJS) piemu$(EXE)
 
 piemu$(EXE): $(OBJS)
 	$(CC) $(LINK)$@ $(CFLAGS) $(OBJS) $(LIBS) $(LINKER)
+ifeq ($(HUGE_PAGES), 1)
+	$(HP) --text --data piemu$(EXE)
+endif
 
 clean:
 	rm -f *$(O)

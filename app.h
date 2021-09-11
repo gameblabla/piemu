@@ -37,13 +37,13 @@
 #ifdef WIN32
 typedef          __int64   int64;
 typedef unsigned __int64  uint64;
-#define INLINE      __inline
+#define INLINE      static __inline
 #else
 #ifndef PSP
 typedef          long long  int64;
 #endif
 typedef unsigned long long  uint64;
-#define INLINE      __inline__
+#define INLINE      static __inline__
 #endif
 
 /* /usr/PIECE/include/piece.hÇÊÇËÅc */
@@ -86,8 +86,14 @@ struct tagPIEMU_CONTEXT;
 //void dbg(const char* fmt, ...);
 //void die(const char* fmt, ...);
 //#define DIE() die(__FILE__ "(%d)", __LINE__)
+
+#ifdef NDEBUG
+#define DIE()  ((void)0)
+#define dbg()  ((void)0)
+#else
 #define DIE()  exit(-1)
 #define dbg()  ((void)0)
+#endif
 
 #define KEY_UP    SDLK_UP
 #define KEY_DOWN  SDLK_DOWN

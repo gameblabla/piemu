@@ -37,7 +37,9 @@
  ****************************************************************************/
 
 int fullscreen = 0; /* 0:ウインドウモード/1:フルスクリーンモード */
-unsigned char fsbuff[DISP_Y * 5][DISP_X * 5]; /* フルスクリーン展開用 */
+//unsigned char fsbuff[DISP_Y * 5][DISP_X * 5]; /* フルスクリーン展開用 */
+char pfi_location[256];
+
 
 #ifdef PSP
 int nCpuFreq, nBusFreq;
@@ -77,15 +79,23 @@ int nCpuFreq, nBusFreq;
  *
  ****************************************************************************/
 
+#ifndef SDL_TRIPLEBUF
+#define SDL_TRIPLEBUF SDL_DOUBLEBUF
+#endif
+
 void ui_init(PIEMU_CONTEXT* context)
 {
 
-  SDL_WM_SetCaption("P/EMU/SDL", "P/EMU/SDL");
-
-  context->screen = SDL_SetVideoMode(128, 88, 32, SDL_HWSURFACE /*| SDL_HWPALETTE*/);
+	SDL_WM_SetCaption("P/EMU/SDL", "P/EMU/SDL");
+	SDL_ShowCursor(SDL_DISABLE);
+	#ifdef _16BPP
+	context->screen = SDL_SetVideoMode(128, 88, 16, SDL_HWSURFACE | SDL_TRIPLEBUF);
+	#else
+	context->screen = SDL_SetVideoMode(128, 88, 32, SDL_HWSURFACE /*| SDL_HWPALETTE*/);
+	#endif
 //  context->buffer = SDL_CreateRGBSurface(SDL_HWPALETTE, 128, 88, 8, 0xff, 0xff << 8, 0xff << 16, 0xff << 24);
 
-  SDL_EnableKeyRepeat(0, 0);
+	SDL_EnableKeyRepeat(0, 0);
 }
 
 #ifdef LINUX
@@ -103,8 +113,15 @@ int SDL_main(int argc, char *argv[])
   nBusFreq = scePowerGetBusClockFrequency();
 #endif
 
-  SDL_Init(SDL_INIT_EVERYTHING);
-
+	SDL_Init(SDL_INIT_EVERYTHING);
+  
+  if (argc < 2)
+  {
+	 printf("Not enough command line arguments, needs pfi file\n");
+	 return 0; 
+  }
+  snprintf(pfi_location, sizeof(pfi_location), "%s", argv[1]);
+  
   //setvbuf(stdout, NULL, _IONBF, 0);
   //setvbuf(stderr, NULL, _IONBF, 0);
 
@@ -151,12 +168,79 @@ int SDL_main(int argc, char *argv[])
       {
         case SDL_QUIT:
           goto L_EXIT;
+          
+        case SDL_KEYDOWN:
+			switch(event.key.keysym.sym)
+			{
+				case SDLK_LEFT:
+					context.keystate[KEY_LEFT] = 1;
+				break;
+				case SDLK_RIGHT:
+					context.keystate[KEY_RIGHT] = 1;
+				break;
+				case SDLK_UP:
+					context.keystate[KEY_UP] = 1;
+				break;
+				case SDLK_DOWN:
+					context.keystate[KEY_DOWN] = 1;
+				break;
+				case SDLK_LCTRL:
+					context.keystate[KEY_A] = 1;
+				break;
+				case SDLK_LALT:
+					context.keystate[KEY_B] = 1;
+				break;
+				case SDLK_RETURN:
+					context.keystate[KEY_START] = 1;
+				break;
+				case SDLK_ESCAPE:
+					context.keystate[KEY_SELECT] = 1;
+				break;
+				default:
+				break;
+			}
+          break;
+        case SDL_KEYUP:
+			switch(event.key.keysym.sym)
+			{
+				case SDLK_LEFT:
+					context.keystate[KEY_LEFT] = 0;
+				break;
+				case SDLK_RIGHT:
+					context.keystate[KEY_RIGHT] = 0;
+				break;
+				case SDLK_UP:
+					context.keystate[KEY_UP] = 0;
+				break;
+				case SDLK_DOWN:
+					context.keystate[KEY_DOWN] = 0;
+				break;
+				case SDLK_LCTRL:
+					context.keystate[KEY_A] = 0;
+				break;
+				case SDLK_LALT:
+					context.keystate[KEY_B] = 0;
+				break;
+				case SDLK_RETURN:
+					context.keystate[KEY_START] = 0;
+				break;
+				case SDLK_ESCAPE:
+					context.keystate[KEY_SELECT] = 0;
+				break;
+				case SDLK_HOME:
+					goto L_EXIT;
+				break;
+				default:
+				break;
+			}
+          break;
+          /*
         case SDL_KEYDOWN:
           context.keystate[event.key.keysym.sym] = 1;
           break;
         case SDL_KEYUP:
           context.keystate[event.key.keysym.sym] = 0;
-          break;
+          break;*/
 #ifdef PSP
         case SDL_JOYBUTTONDOWN:
         {

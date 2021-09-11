@@ -1,5 +1,5 @@
 DEBUG = -g
-OPT = -s -O9 -fomit-frame-pointer -funroll-loops -ffast-math -fno-math-errno
+OPT = -O1 -pg -m32 -D_16BPP
 LINKER = 
 SDLDIR = 
 CFLAGS = -Iinclude -Wall $(shell sdl-config --cflags) -DLINUX $(OPT)

@@ -2,12 +2,14 @@
 #include "app.h"
 #include "pfi.h"
 
+extern char pfi_location[256];
+
 int SetEmuParameters(struct tagPIEMU_CONTEXT* context, EMU* pEmuInfo, void* pUser)
 {
   FILE* fp;
   PFIHEADER pfi;
 
-  fp = fopen("piece.pfi", "rb");
+  fp = fopen(pfi_location, "rb");
   if(!fp) DIE();
   if(!fread(&pfi, sizeof(PFIHEADER), 1, fp))
     DIE();
@@ -28,7 +30,7 @@ int LoadFlashImage(struct tagPIEMU_CONTEXT* context, FLASH* pFlashInfo, void* pU
   PFIHEADER pfi;
   unsigned int nOffset = 0;
 
-  fp = fopen("piece.pfi", "rb");
+  fp = fopen(pfi_location, "rb");
   if(!fp) DIE();
   if(!fread(&pfi, sizeof(PFIHEADER), 1, fp)) DIE();
   if(pfi.dwSignature != 'PFI1') DIE();
@@ -48,18 +50,31 @@ int LoadFlashImage(struct tagPIEMU_CONTEXT* context, FLASH* pFlashInfo, void* pU
 int UpdateScreen(PIEMU_CONTEXT* context, void* pUser)
 {
   SDL_Surface* surface;
+  #ifdef _16BPP
+  static const unsigned short palette[] = { 0xffff, 0xad55, 0x52aa, 0x0 };
+  unsigned short* px;
+  unsigned short* py;
+  char* pp;
+  #else
   static const unsigned int palette[] = { 0x00ffffff, 0x00aaaaaa, 0x00555555, 0x00000000 };
   unsigned int* px;
   unsigned int* py;
   char* pp;
+  #endif
 
   surface = context->screen;
+
   if(SDL_MUSTLOCK(surface))
     SDL_LockSurface(surface);
 #ifndef PSP
   pp = *context->vbuff;
+  #ifdef _16BPP
+  for(py = (unsigned short*)surface->pixels; py != (unsigned short*)surface->pixels + DISP_X * DISP_Y;
+      py += DISP_X)
+   #else
   for(py = (unsigned int*)surface->pixels; py != (unsigned int*)surface->pixels + DISP_X * DISP_Y;
       py += DISP_X)
+   #endif
   {
     for(px = py; px != py + DISP_X; px++)
     {
@@ -81,8 +96,7 @@ int UpdateScreen(PIEMU_CONTEXT* context, void* pUser)
     SDL_UnlockSurface(surface);
 
 //  SDL_BlitSurface(context->buffer, NULL, context->screen, NULL);
-  SDL_UpdateRect(context->screen, 0, 0, 0, 0);
-//  SDL_Flip(context->screen);
+	SDL_Flip(context->screen);
 //  SDL_UpdateRects(context->screen, 1, &rctDest);
   return 1;
 }

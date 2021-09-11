@@ -1,0 +1,34 @@
+#!/bin/sh
+
+mkdir -p opk
+cp ./piemu.linux opk/piemu.linux
+cp ./pfi.png opk/icon.png
+
+# https://unix.stackexchange.com/questions/219268/how-to-add-new-lines-when-using-echo
+print()
+	case    ${IFS- } in
+	(\ *)   printf  %b\\n "$*";;
+	(*)     IFS=\ $IFS
+	printf  %b\\n "$*"
+	IFS=${IFS#?}
+esac
+
+# Create GmenuNx entry file plus other things
+
+print '[Desktop Entry]
+Type=Application
+Name=piemu
+Comment=P/EDE emulator
+Exec=piemu.linux %f
+Icon=icon
+Terminal=false
+Type=Application
+Categories=emulators;
+X-OD-NeedsDownscaling=true
+selectorbrowser=true
+SelectorFilter=pfi,PFI
+' > opk/default."$1".desktop
+
+mksquashfs ./opk piemu_"$1".opk -all-root -noappend -no-exports -no-xattrs
+
+rm -r opk

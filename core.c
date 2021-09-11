@@ -31,7 +31,10 @@
 #define HALT_CLK_MULTIPLY   240
 #define HALT_INT_CLK      24000
 
-#if 1
+/* Gameblabla - Some cycle accurate stuff could require this 
+ * but i've used it without it and so far, it seems good.
+ * */
+#ifdef EXTRA_ACCURACY
 #define STD_NOP \
 { \
   context->core.nop_count++; \
@@ -1226,7 +1229,10 @@ core_trap(PIEMU_CONTEXT* context,int no, int level)
   }
 }
 
-#if 1
+/* Gameblabla - Why is this used ??? It was set to 1 but i disabled it for now
+ * as the additional computing costs can cause extra cycles.
+ * */
+#ifdef EXTRA_ACCURACY
 #define MASK(op, shr, and) ((inst.s >> (16 - (shr + and))) & ((1 << and) - 1))
 #else
 #define MASK(op, shr, and) (op)
